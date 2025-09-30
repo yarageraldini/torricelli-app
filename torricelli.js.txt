@@ -1,0 +1,40 @@
+import { getPontos } from './pontos.js';
+
+export function calcularIntermediarios() {
+  const pontos = getPontos();
+  const intermediarios = [];
+
+  for (let i = 0; i < pontos.length - 1; i++) {
+    const p1 = pontos[i];
+    const p2 = pontos[i + 1];
+
+    // Ignora se o ponto inicial for uma placa R-19 (implementação futura)
+    if (p1.tipo === 'placa') continue;
+
+    const dx = p2.x - p1.x;
+    const a = window.parametrosGlobais.a;
+    const d = window.parametrosGlobais.d;
+
+    // Cálculo da velocidade máxima possível entre os dois pontos
+    const vMaxQuadrado = (2 * a * dx + p1.v ** 2 + p2.v ** 2) / 2;
+    const vMax = Math.sqrt(vMaxQuadrado);
+
+    // Verifica se o pico ocorre entre os dois pontos
+    if (vMax > p1.v && vMax > p2.v) {
+      const xIntermediario = (p1.x + p2.x) / 2;
+      intermediarios.push({
+        id: `I${i}`,
+        x: xIntermediario,
+        v: vMax,
+        desc: 'Intermediário (pico de velocidade)',
+        tipo: 'intermediario'
+      });
+    }
+  }
+
+  // Adiciona os intermediários à lista global
+  pontos.push(...intermediarios);
+
+  // Reordena os pontos por posição (x)
+  pontos.sort((a, b) => a.x - b.x);
+}

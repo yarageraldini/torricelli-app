@@ -1,0 +1,95 @@
+let pontos = [];
+
+export function iniciarPontoInicial(callback) {
+  const container = document.getElementById('pontoInicial');
+  container.innerHTML = `
+    <h2>Ponto Inicial</h2>
+    <label>Configuração:
+      <select id="configInicial">
+        <option value="padrao">Inicial Padrão</option>
+        <option value="ondulacao1">Ondulação Tipo 1</option>
+        <option value="ondulacao2">Ondulação Tipo 2</option>
+        <option value="ldt">LDT</option>
+        <option value="asv">ASV/DTR</option>
+        <option value="semaforo">Semáforo Vermelho</option>
+        <option value="ftp">FTP durante a Travessia</option>
+        <option value="manual">Inserir Dados</option>
+      </select>
+    </label>
+    <div id="manualInputs" style="display:none;">
+      <label>Posição Inicial (m): <input type="number" id="x0" min="0"></label>
+      <label>Velocidade Inicial (km/h): <input type="number" id="v0" min="0"></label>
+    </div>
+    <label>Descrição: <input type="text" id="desc0"></label>
+    <button id="salvarPontoInicial">Salvar Ponto Inicial</button>
+  `;
+
+  document.getElementById('configInicial').onchange = () => {
+    const tipo = document.getElementById('configInicial').value;
+    document.getElementById('manualInputs').style.display = tipo === 'manual' ? 'block' : 'none';
+  };
+
+  document.getElementById('salvarPontoInicial').onclick = () => {
+    const tipo = document.getElementById('configInicial').value;
+    let x = 0, v = 0;
+
+    if (tipo === 'ondulacao2') v = 30 * 10 / 36;
+    else if (tipo === 'ldt') v = (window.parametrosGlobais.vr * 36 / 10 - 10) * 10 / 36;
+    else if (tipo === 'asv') v = window.parametrosGlobais.vr;
+    else if (tipo === 'manual') {
+      x = parseFloat(document.getElementById('x0').value);
+      v = parseFloat(document.getElementById('v0').value) * 10 / 36;
+      if (isNaN(x) || x < 0 || isNaN(v) || v < 0) {
+        alert('Valores inválidos para posição ou velocidade.');
+        return;
+      }
+    }
+
+    const desc = document.getElementById('desc0').value;
+    pontos.push({ id: 'P0', x, v, desc, tipo: 'inicial' });
+
+    container.style.display = 'none';
+    document.getElementById('pontosAdicionais').style.display = 'block';
+    callback();
+  };
+}
+
+export function iniciarInsercaoPontos(callbackFinal) {
+  const container = document.getElementById('pontosAdicionais');
+  const form = document.createElement('div');
+  form.id = 'formPonto';
+  container.appendChild(form);
+
+  const btnAdicionar = document.createElement('button');
+  btnAdicionar.textContent = 'Adicionar Ponto';
+  btnAdicionar.onclick = () => adicionarNovoPonto(form);
+  container.appendChild(btnAdicionar);
+
+  const btnFinalizar = document.createElement('button');
+  btnFinalizar.textContent = 'Finalizar Inserção';
+  btnFinalizar.onclick = () => {
+    container.style.display = 'none';
+    callbackFinal();
+  };
+  container.appendChild(btnFinalizar);
+
+  gerarFormularioNovoPonto(form);
+}
+
+function gerarFormularioNovoPonto(form) {
+  const ultimoX = pontos[pontos.length - 1].x;
+  form.innerHTML = `
+    <h3>Novo Ponto</h3>
+    <label>Configuração:
+      <select id="configPonto">
+        <option value="final">Final Padrão</option>
+        <option value="ondulacao1">Ondulação Tipo 1</option>
+        <option value="ondulacao2">Ondulação Tipo 2</option>
+        <option value="ldt">LDT</option>
+        <option value="asv">ASV/DTR</option>
+        <option value="semaforo">Semáforo Vermelho</option>
+        <option value="ftp">FTP durante a Travessia</option>
+        <option value="manual">Inserir Dados</option>
+      </select>
+    </label>
+    <label>Posição Final (m): <input type="number" id="xf" min="${ultimoX + 1}">

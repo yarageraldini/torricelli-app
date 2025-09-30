@@ -1,0 +1,46 @@
+import { getPontos } from './pontos.js';
+
+export function preencherTabela() {
+  const container = document.getElementById('tabelaResultados');
+  const pontos = getPontos();
+
+  // Cria a tabela
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Posição (m)</th>
+          <th>Velocidade (m/s)</th>
+          <th>Descrição</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  pontos.forEach(p => {
+    html += `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.x.toFixed(2)}</td>
+        <td>${p.v.toFixed(2)}</td>
+        <td>${p.desc || ''}</td>
+        <td>${formatarTipo(p.tipo)}</td>
+      </tr>
+    `;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function formatarTipo(tipo) {
+  switch (tipo) {
+    case 'inicial': return 'Ponto Inicial';
+    case 'inserido': return 'Ponto Inserido';
+    case 'intermediario': return 'Intermediário';
+    case 'placa': return 'Placa R-19';
+    default: return tipo;
+  }
+}
